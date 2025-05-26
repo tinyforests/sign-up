@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gardener On Demand</title>
+  <style>
+    :root {
+      --primary-color: #3d4535;
+      --accent-color: #fff0dc;
+      --font-family: 'IBM Plex Mono', monospace;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font-family);
+      background-color: var(--accent-color);
+      color: var(--primary-color);
+      line-height: 1.6;
+    }
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: auto;
+      padding: 2rem 0;
+    }
+    header {
+      text-align: center;
+      padding: 4rem 0;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    header p {
+      font-size: 1.2rem;
+      color: #555;
+    }
+    .section {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 4rem 0;
+    }
+    .section:nth-child(even) .text {
+      order: 1;
+    }
+    .section:nth-child(even) .image {
+      order: 2;
+    }
+    .section .image,
+    .section .text {
+      flex: 1 1 500px;
+      padding: 1rem;
+    }
+    .section .image img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .section .text h2 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .section .text p {
+      font-size: 1rem;
+      color: #444;
+    }
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2rem;
+      }
+      .section {
+        flex-direction: column;
+      }
+      .section .image, .section .text {
+        order: unset !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="container">
+    <h1>Gardener On Demand</h1>
+    <p>Expert gardening services, right when you need them.</p>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <div class="image">
+        <img src="https://via.placeholder.com/600x400?text=Garden+Consultation" alt="Garden Consultation" />
+      </div>
+      <div class="text">
+        <h2>Instant Consultation</h2>
+        <p>Book a one-on-one session with our expert gardeners to plan your perfect green space. From soil analysis to plant selection, get tailored advice in minutes.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="image">
+        <img src="https://via.placeholder.com/600x400?text=Installation+Services" alt="Installation Services" />
+      </div>
+      <div class="text">
+        <h2>Professional Installation</h2>
+        <p>Whether it’s a new garden bed or a full landscape overhaul, our team handles installation with precision and care, ensuring lasting results and healthy growth.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="image">
+        <img src="https://via.placeholder.com/600x400?text=Ongoing+Maintenance" alt="Ongoing Maintenance" />
+      </div>
+      <div class="text">
+        <h2>Ongoing Maintenance</h2>
+        <p>Keep your garden thriving year-round with our flexible maintenance plans—pruning, weeding, fertilizing, and more, scheduled at your convenience.</p>
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>
