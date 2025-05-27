@@ -8,12 +8,14 @@
     body { font-family: Arial, sans-serif; margin: 20px; }
     .form-group { margin-bottom: 1rem; }
     label { display: block; margin-bottom: 0.25rem; }
-    input, select, textarea, button { width: 100%; padding: 0.5rem; font-size: 1rem; }
+    input, textarea, button { width: 100%; padding: 0.5rem; font-size: 1rem; }
     #message { margin: 1rem 0; font-weight: bold; }
     .hidden { display: none; }
     button { background: #3d4535; color: #fff; border: none; cursor: pointer; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
+  <!-- Google Places API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDDCDijAq82O8rpW8Emj61m4Y4fTPIL0Kc&libraries=places"></script>
 </head>
 <body>
   <h1>Book a Gardener</h1>
@@ -50,6 +52,7 @@
   </form>
 
   <script>
+    // Service check
     const serviced = ['balwyn','kew','surrey hills','mont albert','canterbury'];
     const suburbInput = document.getElementById('suburb');
     const messageEl = document.getElementById('message');
@@ -63,6 +66,7 @@
         messageEl.classList.remove('hidden');
         detailsEl.classList.remove('hidden');
         suburbInput.disabled = true;
+        initAutocomplete();
       } else {
         messageEl.textContent = `Sorry, we aren't servicing ${suburbInput.value} at the moment.`;
         messageEl.style.color = 'red';
@@ -71,9 +75,24 @@
       }
     });
 
+    // Google Places Autocomplete for address
+    function initAutocomplete() {
+      const addressInput = document.getElementById('address');
+      const autocomplete = new google.maps.places.Autocomplete(addressInput, {
+        types: ['address'],
+        componentRestrictions: { country: 'au' }
+      });
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        const postcodeComp = place.address_components.find(comp => comp.types.includes('postal_code'));
+        if (postcodeComp) document.getElementById('postcode').value = postcodeComp.long_name;
+      });
+    }
+
+    // Form submission
     document.getElementById('booking-form').addEventListener('submit', function(e) {
       e.preventDefault();
-      // Here you would collect and send your data
+      // Here you would collect data and send to backend
       alert('Booking submitted! We will be in touch soon.');
     });
   </script>
