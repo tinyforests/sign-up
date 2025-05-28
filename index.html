@@ -10,10 +10,14 @@
     label { display: block; margin-bottom: 0.5rem; }
     input, button { width: 100%; padding: 0.5rem; font-size: 1rem; }
     .tags-container { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .tag { padding: 0.5rem 1rem; border: 1px solid #3d4535; border-radius: 20px; background-color: #fff; cursor: pointer; user-select: none; }
+    .tag { position: relative; padding: 0.5rem 1rem; border: 1px solid #3d4535; border-radius: 20px; background-color: #fff; cursor: pointer; user-select: none; }
     .tag.selected { background-color: #d4edda; border-color: #3d4535; }
+    .tag.popular { border-color: #f0a500; }
+    .tag.popular .badge { position: absolute; top: -8px; right: -8px; background: #f0a500; color: #fff; font-size: 0.75rem; padding: 2px 6px; border-radius: 12px; }
     #message { margin: 1rem 0; font-weight: bold; }
     .hidden { display: none; }
+    .preview-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+    .preview-container img { width: 170px; height: 150px; object-fit: cover; border: 1px solid #ccc; border-radius: 4px; }
     button[type="submit"] { background: #3d4535; color: #fff; border: none; cursor: pointer; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
@@ -61,13 +65,16 @@
           <div class="tag" data-value="1hr_120">1-hour consultation ($120)</div>
           <div class="tag" data-value="2g1hr_160">2 gardeners, 1 hour ($160 + fees)</div>
           <div class="tag" data-value="2g2hr_320">2 gardeners, 2 hours ($320 + fees)</div>
-          <div class="tag" data-value="2g3hr_480">2 gardeners, 3 hours ($480 + fees)</div>
+          <div class="tag popular" data-value="2g3hr_480">2 gardeners, 3 hours ($480 + fees)
+            <span class="badge">Most Popular</span>
+          </div>
         </div>
       </div>
 
       <div class="form-group">
         <label for="photos">Upload Images</label>
         <input id="photos" type="file" accept="image/*" multiple />
+        <div class="preview-container" id="preview-container"></div>
       </div>
 
       <div class="form-group">
@@ -97,6 +104,8 @@
     const hedgeOptions = document.getElementById('hedge-options');
     const hedgeLadderContainer = document.getElementById('hedge-ladder-container');
     const durationContainer = document.getElementById('duration-container');
+    const photosInput = document.getElementById('photos');
+    const previewContainer = document.getElementById('preview-container');
 
     // Initialize Google Places Autocomplete
     function initAutocomplete() {
@@ -106,14 +115,10 @@
       });
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
-        // Postcode
         const pc = place.address_components.find(c => c.types.includes('postal_code'));
         if (pc) postcodeInput.value = pc.long_name;
-        // Suburb
-        const sc = place.address_components.find(c => c.types.includes('locality'))
-                  || place.address_components.find(c => c.types.includes('sublocality'));
+        const sc = place.address_components.find(c => c.types.includes('locality')) || place.address_components.find(c => c.types.includes('sublocality'));
         const suburb = sc ? sc.long_name.trim().toLowerCase() : '';
-        // Service check
         if (serviced.includes(suburb)) {
           messageEl.textContent = 'Great news! We service your area.';
           messageEl.style.color = 'green';
@@ -132,21 +137,18 @@
     // Task tags toggle
     tasksContainer.addEventListener('click', e => {
       if (e.target.classList.contains('tag')) {
-        const tag = e.target;
-        const val = tag.dataset.value;
+        const val = e.target.dataset.value;
         if (selectedTasks.includes(val)) {
           selectedTasks = selectedTasks.filter(t => t !== val);
-          tag.classList.remove('selected');
+          e.target.classList.remove('selected');
         } else {
           selectedTasks.push(val);
-          tag.classList.add('selected');
+          e.target.classList.add('selected');
         }
-        // Show hedge options if hedge_trimming selected
         if (selectedTasks.includes('hedge_trimming')) {
           hedgeOptions.classList.remove('hidden');
         } else {
           hedgeOptions.classList.add('hidden');
-          // reset ladder
           ladderRequired = false;
           const ladderTag = hedgeLadderContainer.querySelector('.selected');
           if (ladderTag) ladderTag.classList.remove('selected');
@@ -157,9 +159,8 @@
     // Hedge ladder toggle
     hedgeLadderContainer.addEventListener('click', e => {
       if (e.target.classList.contains('tag')) {
-        const tag = e.target;
         ladderRequired = !ladderRequired;
-        tag.classList.toggle('selected');
+        e.target.classList.toggle('selected');
       }
     });
 
@@ -171,6 +172,20 @@
         e.target.classList.add('selected');
         selectedDuration = e.target.dataset.value;
       }
+    });
+
+    // Image preview
+    photosInput.addEventListener('change', () => {
+      previewContainer.innerHTML = '';
+      Array.from(photosInput.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          previewContainer.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
     });
 
     // Form submission
