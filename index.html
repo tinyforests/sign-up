@@ -18,7 +18,6 @@
     .hidden { display: none; }
     .preview-container { display: flex; gap: 0.5rem; margin-top: 0.5rem; overflow-x: auto; }
     .preview-container img { width: 170px; height: 150px; object-fit: cover; border: 1px solid #ccc; border-radius: 4px; }
-    .add-more-btn { margin-top: 0.5rem; background: #eee; border: 1px solid #ccc; cursor: pointer; }
     button[type="submit"] { background: #3d4535; color: #fff; border: none; cursor: pointer; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
@@ -72,7 +71,6 @@
       <div class="form-group">
         <label for="photos">Upload Images</label>
         <input id="photos" type="file" accept="image/*" multiple />
-        <button type="button" id="add-more-btn" class="add-more-btn hidden">Upload Another Image</button>
         <div class="preview-container" id="preview-container"></div>
       </div>
 
@@ -95,7 +93,6 @@
     const postcodeInput = document.getElementById('postcode');
     const photosInput = document.getElementById('photos');
     const previewContainer = document.getElementById('preview-container');
-    const addMoreBtn = document.getElementById('add-more-btn');
 
     let selectedTasks = [];
     let selectedDuration = null;
@@ -143,8 +140,7 @@
           e.target.classList.add('selected');
         }
         if (selectedTasks.includes('hedge_trimming')) {
-          hedgeOptions.classList.remove('hidden');
-        } else {
+          hedgeOptions.classList.remove('hidden');\n        } else {
           hedgeOptions.classList.add('hidden');
           ladderRequired = false;
           const ladderTag = hedgeLadderContainer.querySelector('.selected');
@@ -180,11 +176,6 @@
         };
         reader.readAsDataURL(file);
       });
-      addMoreBtn.classList.remove('hidden');
-    });
-
-    addMoreBtn.addEventListener('click', () => {
-      photosInput.click();
     });
 
     document.getElementById('booking-form').addEventListener('submit', e => {
