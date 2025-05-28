@@ -18,6 +18,7 @@
     .hidden { display: none; }
     .preview-container { display: flex; gap: 0.5rem; margin-top: 0.5rem; overflow-x: auto; }
     .preview-container img { width: 170px; height: 150px; object-fit: cover; border: 1px solid #ccc; border-radius: 4px; }
+    .add-more-btn { margin-top: 0.5rem; background: #eee; border: 1px solid #ccc; cursor: pointer; }
     button[type="submit"] { background: #3d4535; color: #fff; border: none; cursor: pointer; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
@@ -71,6 +72,7 @@
       <div class="form-group">
         <label for="photos">Upload Images</label>
         <input id="photos" type="file" accept="image/*" multiple />
+        <button type="button" id="add-more-btn" class="add-more-btn hidden">Upload Another Image</button>
         <div class="preview-container" id="preview-container"></div>
       </div>
 
@@ -91,6 +93,9 @@
     const messageEl = document.getElementById('message');
     const detailsEl = document.getElementById('details');
     const postcodeInput = document.getElementById('postcode');
+    const photosInput = document.getElementById('photos');
+    const previewContainer = document.getElementById('preview-container');
+    const addMoreBtn = document.getElementById('add-more-btn');
 
     let selectedTasks = [];
     let selectedDuration = null;
@@ -100,8 +105,6 @@
     const hedgeOptions = document.getElementById('hedge-options');
     const hedgeLadderContainer = document.getElementById('hedge-ladder-container');
     const durationContainer = document.getElementById('duration-container');
-    const photosInput = document.getElementById('photos');
-    const previewContainer = document.getElementById('preview-container');
 
     function initAutocomplete() {
       const autocomplete = new google.maps.places.Autocomplete(addressInput, {
@@ -177,6 +180,11 @@
         };
         reader.readAsDataURL(file);
       });
+      addMoreBtn.classList.remove('hidden');
+    });
+
+    addMoreBtn.addEventListener('click', () => {
+      photosInput.click();
     });
 
     document.getElementById('booking-form').addEventListener('submit', e => {
