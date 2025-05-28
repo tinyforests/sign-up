@@ -31,6 +31,7 @@
 
     <div id="details" class="hidden">
       <input id="postcode" type="hidden" />
+
       <div class="form-group">
         <label>Tasks Required</label>
         <div class="tags-container" id="tags-container">
@@ -42,29 +43,48 @@
           <div class="tag" data-value="cleanup">Cleanup</div>
         </div>
       </div>
+
+      <div class="form-group">
+        <label>Service Duration</label>
+        <div class="tags-container" id="duration-container">
+          <div class="tag" data-value="1hr_120">1-hour consultation ($120)</div>
+          <div class="tag" data-value="2g1hr_160">2 gardeners, 1 hour ($160 + fees)</div>
+          <div class="tag" data-value="2g2hr_320">2 gardeners, 2 hours ($320 + fees)</div>
+          <div class="tag" data-value="2g3hr_480">2 gardeners, 3 hours ($480 + fees)</div>
+        </div>
+      </div>
+
       <div class="form-group">
         <label for="photos">Upload Images</label>
         <input id="photos" type="file" accept="image/*" multiple />
       </div>
+
       <div class="form-group">
         <label for="datetime">Preferred Date & Time</label>
         <input id="datetime" type="datetime-local" required />
       </div>
+
       <button id="submit-btn" type="submit">Submit Booking</button>
     </div>
   </form>
 
   <script>
-    // List of serviced suburbs
+    // Serviced suburbs list
     const serviced = ['balwyn','kew','surrey hills','mont albert','canterbury'];
     const addressInput = document.getElementById('address');
     const messageEl = document.getElementById('message');
     const detailsEl = document.getElementById('details');
     const postcodeInput = document.getElementById('postcode');
-    const tagsContainer = document.getElementById('tags-container');
-    let selectedTags = [];
 
-    // Initialize Google Autocomplete
+    // Tags for tasks
+    const tagsContainer = document.getElementById('tags-container');
+    let selectedTasks = [];
+
+    // Tags for duration (single-select)
+    const durationContainer = document.getElementById('duration-container');
+    let selectedDuration = null;
+
+    // Initialize Google Places Autocomplete
     function initAutocomplete() {
       const autocomplete = new google.maps.places.Autocomplete(addressInput, {
         types: ['address'],
@@ -72,14 +92,14 @@
       });
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
-        // Extract postcode
+        // Postcode
         const postcodeComp = place.address_components.find(c => c.types.includes('postal_code'));
         if (postcodeComp) postcodeInput.value = postcodeComp.long_name;
-        // Extract suburb/locality
+        // Suburb/locality
         let suburbComp = place.address_components.find(c => c.types.includes('locality'))
                          || place.address_components.find(c => c.types.includes('sublocality'));
         const suburb = suburbComp ? suburbComp.long_name.trim().toLowerCase() : '';
-        // Check serviceability
+        // Serviceable?
         if (serviced.includes(suburb)) {
           messageEl.textContent = 'Great news! We service your area.';
           messageEl.style.color = 'green';
@@ -95,18 +115,30 @@
     }
     google.maps.event.addDomListener(window, 'load', initAutocomplete);
 
-    // Tag click handler
+    // Task tags toggle
     tagsContainer.addEventListener('click', (e) => {
       if (e.target.classList.contains('tag')) {
         const tag = e.target;
         const value = tag.dataset.value;
-        if (selectedTags.includes(value)) {
-          selectedTags = selectedTags.filter(t => t !== value);
+        if (selectedTasks.includes(value)) {
+          selectedTasks = selectedTasks.filter(t => t !== value);
           tag.classList.remove('selected');
         } else {
-          selectedTags.push(value);
+          selectedTasks.push(value);
           tag.classList.add('selected');
         }
+      }
+    });
+
+    // Duration tags single-select
+    durationContainer.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tag')) {
+        // Deselect previous
+        const prev = durationContainer.querySelector('.tag.selected');
+        if (prev) prev.classList.remove('selected');
+        // Select new
+        e.target.classList.add('selected');
+        selectedDuration = e.target.dataset.value;
       }
     });
 
@@ -116,7 +148,8 @@
       const data = {
         address: addressInput.value,
         postcode: postcodeInput.value,
-        tasks: selectedTags,
+        tasks: selectedTasks,
+        duration: selectedDuration,
         datetime: document.getElementById('datetime').value
       };
       console.log('Booking data:', data);
