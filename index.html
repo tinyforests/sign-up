@@ -6,7 +6,6 @@
   <title>Gardener On Demand Booking</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    #details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .form-group { margin-bottom: 1rem; }
     label { display: block; margin-bottom: 0.5rem; }
     input, button { width: 100%; padding: 0.5rem; font-size: 1rem; }
@@ -19,7 +18,6 @@
     .hidden { display: none; }
     .preview-container { display: flex; gap: 0.5rem; margin-top: 0.5rem; overflow-x: auto; }
     .preview-container img { width: 170px; height: 150px; object-fit: cover; border: 1px solid #ccc; border-radius: 4px; }
-    .full { grid-column: 1 / 3; }
     button[type="submit"] { background: #3d4535; color: #fff; border: none; cursor: pointer; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
@@ -29,30 +27,16 @@
 <body>
   <h1>Book a Gardener</h1>
   <form id="booking-form">
-    <div class="form-group full">
+    <div class="form-group">
       <label for="address">Street Address</label>
       <input id="address" type="text" placeholder="Start typing your address..." required />
     </div>
-    <div id="message" class="hidden full"></div>
+    <div id="message" class="hidden"></div>
 
     <div id="details" class="hidden">
       <input id="postcode" type="hidden" />
 
-      <!-- Preferred Date & Time on left -->
       <div class="form-group">
-        <label for="datetime">Preferred Date & Time</label>
-        <input id="datetime" type="datetime-local" required />
-      </div>
-
-      <!-- Image upload on right -->
-      <div class="form-group">
-        <label for="photos">Upload Images</label>
-        <input id="photos" type="file" accept="image/*" multiple />
-        <div class="preview-container" id="preview-container"></div>
-      </div>
-
-      <!-- Tasks span full width -->
-      <div class="form-group full">
         <label>Tasks Required</label>
         <div class="tags-container" id="tasks-container">
           <div class="tag" data-value="mowing">Mowing</div>
@@ -65,16 +49,14 @@
         </div>
       </div>
 
-      <!-- Hedge options full -->
-      <div class="form-group hidden full" id="hedge-options">
+      <div class="form-group hidden" id="hedge-options">
         <label>Hedge Trimming Options</label>
         <div class="tags-container" id="hedge-ladder-container">
           <div class="tag" data-value="ladder_required">Need Ladder (+$60 per 30min)</div>
         </div>
       </div>
 
-      <!-- Duration full -->
-      <div class="form-group full">
+      <div class="form-group">
         <label>Service Duration</label>
         <div class="tags-container" id="duration-container">
           <div class="tag" data-value="1hr_120">1-hour consultation ($120)</div>
@@ -86,27 +68,34 @@
         </div>
       </div>
 
-      <!-- Submit full -->
-      <div class="form-group full">
+      <div class="form-group">
+        <label for="photos">Upload Images</label>
+        <input id="photos" type="file" accept="image/*" multiple />
+        <div class="preview-container" id="preview-container"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="datetime">Preferred Date & Time</label>
+        <input id="datetime" type="datetime-local" required />
+      </div>
+
+      <div class="form-group">
         <button id="submit-btn" type="submit">Submit Booking</button>
       </div>
     </div>
   </form>
 
   <script>
-    // Serviced suburbs
     const serviced = ['balwyn','kew','surrey hills','mont albert','canterbury'];
     const addressInput = document.getElementById('address');
     const messageEl = document.getElementById('message');
     const detailsEl = document.getElementById('details');
     const postcodeInput = document.getElementById('postcode');
 
-    // Selected data
     let selectedTasks = [];
     let selectedDuration = null;
     let ladderRequired = false;
 
-    // Containers
     const tasksContainer = document.getElementById('tasks-container');
     const hedgeOptions = document.getElementById('hedge-options');
     const hedgeLadderContainer = document.getElementById('hedge-ladder-container');
@@ -114,7 +103,6 @@
     const photosInput = document.getElementById('photos');
     const previewContainer = document.getElementById('preview-container');
 
-    // Initialize Google Places Autocomplete
     function initAutocomplete() {
       const autocomplete = new google.maps.places.Autocomplete(addressInput, {
         types: ['address'],
@@ -141,7 +129,6 @@
     }
     google.maps.event.addDomListener(window, 'load', initAutocomplete);
 
-    // Task tags toggle
     tasksContainer.addEventListener('click', e => {
       if (e.target.classList.contains('tag')) {
         const val = e.target.dataset.value;
@@ -163,7 +150,6 @@
       }
     });
 
-    // Hedge ladder toggle
     hedgeLadderContainer.addEventListener('click', e => {
       if (e.target.classList.contains('tag')) {
         ladderRequired = !ladderRequired;
@@ -171,7 +157,6 @@
       }
     });
 
-    // Duration single-select
     durationContainer.addEventListener('click', e => {
       if (e.target.classList.contains('tag')) {
         const prev = durationContainer.querySelector('.selected');
@@ -181,7 +166,6 @@
       }
     });
 
-    // Image preview
     photosInput.addEventListener('change', () => {
       previewContainer.innerHTML = '';
       Array.from(photosInput.files).forEach(file => {
@@ -195,7 +179,6 @@
       });
     });
 
-    // Form submission
     document.getElementById('booking-form').addEventListener('submit', e => {
       e.preventDefault();
       const data = {
