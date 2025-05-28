@@ -7,11 +7,14 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     .form-group { margin-bottom: 1rem; }
-    label { display: block; margin-bottom: 0.25rem; }
-    input, textarea, button { width: 100%; padding: 0.5rem; font-size: 1rem; }
+    label { display: block; margin-bottom: 0.5rem; }
+    input, button { width: 100%; padding: 0.5rem; font-size: 1rem; }
+    .tags-container { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .tag { padding: 0.5rem 1rem; border: 1px solid #3d4535; border-radius: 20px; background-color: #fff; cursor: pointer; user-select: none; }
+    .tag.selected { background-color: #d4edda; border-color: #3d4535; }
     #message { margin: 1rem 0; font-weight: bold; }
     .hidden { display: none; }
-    button { background: #3d4535; color: #fff; border: none; cursor: pointer; }
+    button[type="submit"] { background: #3d4535; color: #fff; border: none; cursor: pointer; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
   <!-- Google Places API -->
@@ -29,8 +32,15 @@
     <div id="details" class="hidden">
       <input id="postcode" type="hidden" />
       <div class="form-group">
-        <label for="tasks">Tasks Required</label>
-        <textarea id="tasks" rows="4" placeholder="Describe the work you need"></textarea>
+        <label>Tasks Required</label>
+        <div class="tags-container" id="tags-container">
+          <div class="tag" data-value="mowing">Mowing</div>
+          <div class="tag" data-value="weeding">Weeding</div>
+          <div class="tag" data-value="pruning">Pruning</div>
+          <div class="tag" data-value="planting">Planting</div>
+          <div class="tag" data-value="fertilising">Fertilising</div>
+          <div class="tag" data-value="cleanup">Cleanup</div>
+        </div>
       </div>
       <div class="form-group">
         <label for="photos">Upload Images</label>
@@ -51,7 +61,10 @@
     const messageEl = document.getElementById('message');
     const detailsEl = document.getElementById('details');
     const postcodeInput = document.getElementById('postcode');
+    const tagsContainer = document.getElementById('tags-container');
+    let selectedTags = [];
 
+    // Initialize Google Autocomplete
     function initAutocomplete() {
       const autocomplete = new google.maps.places.Autocomplete(addressInput, {
         types: ['address'],
@@ -80,18 +93,30 @@
         messageEl.classList.remove('hidden');
       });
     }
-
-    // Initialize autocomplete on load
     google.maps.event.addDomListener(window, 'load', initAutocomplete);
+
+    // Tag click handler
+    tagsContainer.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tag')) {
+        const tag = e.target;
+        const value = tag.dataset.value;
+        if (selectedTags.includes(value)) {
+          selectedTags = selectedTags.filter(t => t !== value);
+          tag.classList.remove('selected');
+        } else {
+          selectedTags.push(value);
+          tag.classList.add('selected');
+        }
+      }
+    });
 
     // Handle form submission
     document.getElementById('booking-form').addEventListener('submit', function(e) {
       e.preventDefault();
-      // Collect form data
       const data = {
         address: addressInput.value,
         postcode: postcodeInput.value,
-        tasks: document.getElementById('tasks').value,
+        tasks: selectedTags,
         datetime: document.getElementById('datetime').value
       };
       console.log('Booking data:', data);
