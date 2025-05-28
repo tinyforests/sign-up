@@ -32,18 +32,29 @@
     <div id="details" class="hidden">
       <input id="postcode" type="hidden" />
 
+      <!-- Tasks -->
       <div class="form-group">
         <label>Tasks Required</label>
-        <div class="tags-container" id="tags-container">
+        <div class="tags-container" id="tasks-container">
           <div class="tag" data-value="mowing">Mowing</div>
           <div class="tag" data-value="weeding">Weeding</div>
           <div class="tag" data-value="pruning">Pruning</div>
           <div class="tag" data-value="planting">Planting</div>
           <div class="tag" data-value="fertilising">Fertilising</div>
           <div class="tag" data-value="cleanup">Cleanup</div>
+          <div class="tag" data-value="hedge_trimming">Hedge Trimming</div>
         </div>
       </div>
 
+      <!-- Hedge options -->
+      <div class="form-group hidden" id="hedge-options">
+        <label>Hedge Trimming Options</label>
+        <div class="tags-container" id="hedge-ladder-container">
+          <div class="tag" data-value="ladder_required">Need Ladder (+$60 per 30min)</div>
+        </div>
+      </div>
+
+      <!-- Duration -->
       <div class="form-group">
         <label>Service Duration</label>
         <div class="tags-container" id="duration-container">
@@ -69,20 +80,23 @@
   </form>
 
   <script>
-    // Serviced suburbs list
+    // Serviced suburbs
     const serviced = ['balwyn','kew','surrey hills','mont albert','canterbury'];
     const addressInput = document.getElementById('address');
     const messageEl = document.getElementById('message');
     const detailsEl = document.getElementById('details');
     const postcodeInput = document.getElementById('postcode');
 
-    // Tags for tasks
-    const tagsContainer = document.getElementById('tags-container');
+    // Selected data
     let selectedTasks = [];
-
-    // Tags for duration (single-select)
-    const durationContainer = document.getElementById('duration-container');
     let selectedDuration = null;
+    let ladderRequired = false;
+
+    // Containers
+    const tasksContainer = document.getElementById('tasks-container');
+    const hedgeOptions = document.getElementById('hedge-options');
+    const hedgeLadderContainer = document.getElementById('hedge-ladder-container');
+    const durationContainer = document.getElementById('duration-container');
 
     // Initialize Google Places Autocomplete
     function initAutocomplete() {
@@ -93,20 +107,20 @@
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
         // Postcode
-        const postcodeComp = place.address_components.find(c => c.types.includes('postal_code'));
-        if (postcodeComp) postcodeInput.value = postcodeComp.long_name;
-        // Suburb/locality
-        let suburbComp = place.address_components.find(c => c.types.includes('locality'))
-                         || place.address_components.find(c => c.types.includes('sublocality'));
-        const suburb = suburbComp ? suburbComp.long_name.trim().toLowerCase() : '';
-        // Serviceable?
+        const pc = place.address_components.find(c => c.types.includes('postal_code'));
+        if (pc) postcodeInput.value = pc.long_name;
+        // Suburb
+        const sc = place.address_components.find(c => c.types.includes('locality'))
+                  || place.address_components.find(c => c.types.includes('sublocality'));
+        const suburb = sc ? sc.long_name.trim().toLowerCase() : '';
+        // Service check
         if (serviced.includes(suburb)) {
           messageEl.textContent = 'Great news! We service your area.';
           messageEl.style.color = 'green';
           detailsEl.classList.remove('hidden');
           addressInput.disabled = true;
         } else {
-          messageEl.textContent = `Sorry, we aren't servicing ${suburbComp ? suburbComp.long_name : 'your area'} at the moment.`;
+          messageEl.textContent = `Sorry, we aren't servicing ${sc ? sc.long_name : 'your area'} at the moment.`;
           messageEl.style.color = 'red';
           detailsEl.classList.add('hidden');
         }
@@ -116,40 +130,58 @@
     google.maps.event.addDomListener(window, 'load', initAutocomplete);
 
     // Task tags toggle
-    tagsContainer.addEventListener('click', (e) => {
+    tasksContainer.addEventListener('click', e => {
       if (e.target.classList.contains('tag')) {
         const tag = e.target;
-        const value = tag.dataset.value;
-        if (selectedTasks.includes(value)) {
-          selectedTasks = selectedTasks.filter(t => t !== value);
+        const val = tag.dataset.value;
+        if (selectedTasks.includes(val)) {
+          selectedTasks = selectedTasks.filter(t => t !== val);
           tag.classList.remove('selected');
         } else {
-          selectedTasks.push(value);
+          selectedTasks.push(val);
           tag.classList.add('selected');
+        }
+        // Show hedge options if hedge_trimming selected
+        if (selectedTasks.includes('hedge_trimming')) {
+          hedgeOptions.classList.remove('hidden');
+        } else {
+          hedgeOptions.classList.add('hidden');
+          // reset ladder
+          ladderRequired = false;
+          const ladderTag = hedgeLadderContainer.querySelector('.selected');
+          if (ladderTag) ladderTag.classList.remove('selected');
         }
       }
     });
 
-    // Duration tags single-select
-    durationContainer.addEventListener('click', (e) => {
+    // Hedge ladder toggle
+    hedgeLadderContainer.addEventListener('click', e => {
       if (e.target.classList.contains('tag')) {
-        // Deselect previous
-        const prev = durationContainer.querySelector('.tag.selected');
+        const tag = e.target;
+        ladderRequired = !ladderRequired;
+        tag.classList.toggle('selected');
+      }
+    });
+
+    // Duration single-select
+    durationContainer.addEventListener('click', e => {
+      if (e.target.classList.contains('tag')) {
+        const prev = durationContainer.querySelector('.selected');
         if (prev) prev.classList.remove('selected');
-        // Select new
         e.target.classList.add('selected');
         selectedDuration = e.target.dataset.value;
       }
     });
 
-    // Handle form submission
-    document.getElementById('booking-form').addEventListener('submit', function(e) {
+    // Form submission
+    document.getElementById('booking-form').addEventListener('submit', e => {
       e.preventDefault();
       const data = {
         address: addressInput.value,
         postcode: postcodeInput.value,
         tasks: selectedTasks,
         duration: selectedDuration,
+        ladderRequired,
         datetime: document.getElementById('datetime').value
       };
       console.log('Booking data:', data);
