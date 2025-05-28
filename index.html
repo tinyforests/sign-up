@@ -10,10 +10,10 @@
     label { display: block; margin-bottom: 0.5rem; }
     input, button { width: 100%; padding: 0.5rem; font-size: 1rem; }
     .tags-container { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .tag { position: relative; padding: 0.5rem 1rem; border: 1px solid #3d4535; border-radius: 20px; background-color: #fff; cursor: pointer; user-select: none; }
+    .tag { padding: 0.5rem 1rem; border: 1px solid #3d4535; border-radius: 20px; background-color: #fff; cursor: pointer; user-select: none; }
     .tag.selected { background-color: #d4edda; border-color: #3d4535; }
     .tag.popular { border-color: #f0a500; }
-    .tag.popular .badge { position: absolute; top: -8px; right: -8px; background: #f0a500; color: #fff; font-size: 0.75rem; padding: 2px 6px; border-radius: 12px; }
+    .badge { position: absolute; top: -8px; right: -8px; background: #f0a500; color: #fff; font-size: 0.75rem; padding: 2px 6px; border-radius: 12px; }
     #message { margin: 1rem 0; font-weight: bold; }
     .hidden { display: none; }
     .preview-container { display: flex; gap: 0.5rem; margin-top: 0.5rem; overflow-x: auto; }
@@ -21,12 +21,11 @@
     button[type="submit"] { background: #3d4535; color: #fff; border: none; cursor: pointer; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
-  <!-- Google Places API (async with callback) -->
+  <!-- Google Places API -->
   <script>
     function initAutocomplete() {
-      const autocomplete = new google.maps.places.Autocomplete(document.getElementById('address'), {
-        types: ['address'], componentRestrictions: { country: 'au' }
-      });
+      const input = document.getElementById('address');
+      const autocomplete = new google.maps.places.Autocomplete(input, { types: ['address'], componentRestrictions: { country: 'au' } });
       autocomplete.addListener('place_changed', onPlaceChanged);
     }
     function onPlaceChanged() {
@@ -37,17 +36,20 @@
                  || place.address_components.find(c => c.types.includes('sublocality'));
       const suburb = sc ? sc.long_name.trim().toLowerCase() : '';
       const serviced = ['balwyn','kew','surrey hills','mont albert','canterbury'];
-      const messageEl = document.getElementById('message');
-      const detailsEl = document.getElementById('details');
-      const addressInput = document.getElementById('address');
+      const msg = document.getElementById('message');
+      const details = document.getElementById('details');
+      const addr = document.getElementById('address');
       if (serviced.includes(suburb)) {
-        messageEl.textContent = 'Great news! We service your area.';
-        messageEl.style.color = 'green'; detailsEl.classList.remove('hidden'); addressInput.disabled = true;
+        msg.textContent = 'Great news! We service your area.';
+        msg.style.color = 'green';
+        details.classList.remove('hidden');
+        addr.disabled = true;
       } else {
-        messageEl.textContent = `Sorry, we aren't servicing ${sc ? sc.long_name : 'your area'} at the moment.`;
-        messageEl.style.color = 'red'; detailsEl.classList.add('hidden');
+        msg.textContent = `Sorry, we aren't servicing ${sc ? sc.long_name : 'your area'} at the moment.`;
+        msg.style.color = 'red';
+        details.classList.add('hidden');
       }
-      messageEl.classList.remove('hidden');
+      msg.classList.remove('hidden');
     }
   </script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDDCDijAq82O8rpW8Emj61m4Y4fTPIL0Kc&libraries=places&callback=initAutocomplete" async defer></script>
@@ -65,6 +67,11 @@
       <input id="postcode" type="hidden" />
 
       <div class="form-group">
+        <label for="phone">Best Contact Number</label>
+        <input id="phone" type="tel" placeholder="Enter phone number" required />
+      </div>
+
+      <div class="form-group">
         <label>Tasks Required</label>
         <div class="tags-container" id="tasks-container">
           <div class="tag" data-value="mowing">Mowing</div>
@@ -76,12 +83,14 @@
           <div class="tag" data-value="hedge_trimming">Hedge Trimming</div>
         </div>
       </div>
+
       <div class="form-group hidden" id="hedge-options">
         <label>Hedge Trimming Options</label>
         <div class="tags-container" id="hedge-ladder-container">
           <div class="tag" data-value="ladder_required">Need Ladder (+$60 per 30min)</div>
         </div>
       </div>
+
       <div class="form-group">
         <label>Service Duration</label>
         <div class="tags-container" id="duration-container">
@@ -91,25 +100,29 @@
           <div class="tag popular" data-value="2g3hr_480">2 gardeners, 3 hours ($480 + fees)<span class="badge">Most Popular</span></div>
         </div>
       </div>
+
       <div class="form-group">
         <label for="photos">Upload Images</label>
         <input id="photos" type="file" accept="image/*" multiple />
         <div class="preview-container" id="preview-container"></div>
       </div>
+
       <div class="form-group">
         <label for="datetime">Preferred Date & Time</label>
         <input id="datetime" type="datetime-local" required />
       </div>
+
       <div class="form-group">
         <button id="submit-btn" type="submit">Submit Booking</button>
       </div>
     </div>
   </form>
+
   <script>
     const tasksContainer = document.getElementById('tasks-container');
-    const durationContainer = document.getElementById('duration-container');
-    const hedgeLadderContainer = document.getElementById('hedge-ladder-container');
     const hedgeOptions = document.getElementById('hedge-options');
+    const hedgeLadderContainer = document.getElementById('hedge-ladder-container');
+    const durationContainer = document.getElementById('duration-container');
     const photosInput = document.getElementById('photos');
     const previewContainer = document.getElementById('preview-container');
     let selectedTasks = [], selectedDuration = null, ladderRequired = false;
@@ -117,22 +130,40 @@
     tasksContainer.addEventListener('click', e => {
       if (e.target.classList.contains('tag')) {
         const v = e.target.dataset.value;
-        if (selectedTasks.includes(v)) { selectedTasks = selectedTasks.filter(t=>t!==v); e.target.classList.remove('selected'); }
+        if (selectedTasks.includes(v)) { selectedTasks = selectedTasks.filter(t => t !== v); e.target.classList.remove('selected'); }
         else { selectedTasks.push(v); e.target.classList.add('selected'); }
         if (selectedTasks.includes('hedge_trimming')) hedgeOptions.classList.remove('hidden');
-        else { hedgeOptions.classList.add('hidden'); ladderRequired=false; hedgeLadderContainer.querySelector('.selected')?.classList.remove('selected'); }
+        else { hedgeOptions.classList.add('hidden'); ladderRequired = false; hedgeLadderContainer.querySelector('.selected')?.classList.remove('selected'); }
       }
     });
     hedgeLadderContainer.addEventListener('click', e => {
-      if (e.target.classList.contains('tag')) { ladderRequired=!ladderRequired; e.target.classList.toggle('selected'); }
+      if (e.target.classList.contains('tag')) { ladderRequired = !ladderRequired; e.target.classList.toggle('selected'); }
     });
     durationContainer.addEventListener('click', e => {
-      if (e.target.classList.contains('tag')) { durationContainer.querySelector('.selected')?.classList.remove('selected'); selectedDuration=e.target.dataset.value; e.target.classList.add('selected'); }
+      if (e.target.classList.contains('tag')) { durationContainer.querySelector('.selected')?.classList.remove('selected'); selectedDuration = e.target.dataset.value; e.target.classList.add('selected'); }
     });
-    photosInput.addEventListener('change', ()=>{
-      previewContainer.innerHTML=''; Array.from(photosInput.files).forEach(file=>{const r=new FileReader(); r.onload=e=>{const i=document.createElement('img');i.src=e.target.result;previewContainer.appendChild(i);} ; r.readAsDataURL(file);});
+    photosInput.addEventListener('change', () => {
+      previewContainer.innerHTML = '';
+      Array.from(photosInput.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => { const img = document.createElement('img'); img.src = e.target.result; previewContainer.appendChild(img); };
+        reader.readAsDataURL(file);
+      });
     });
-    document.getElementById('booking-form').addEventListener('submit', e=>{e.preventDefault();console.log({address:document.getElementById('address').value,postcode:document.getElementById('postcode').value,tasks:selectedTasks,duration:selectedDuration,ladderRequired,datetime:document.getElementById('datetime').value});alert('Booking submitted!');});
+    document.getElementById('booking-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const data = {
+        address: document.getElementById('address').value,
+        postcode: document.getElementById('postcode').value,
+        phone: document.getElementById('phone').value,
+        tasks: selectedTasks,
+        duration: selectedDuration,
+        ladderRequired,
+        datetime: document.getElementById('datetime').value
+      };
+      console.log('Booking data:', data);
+      alert('Thank you! We’ll call you shortly to confirm your booking.');
+    });
   </script>
 </body>
 </html>
