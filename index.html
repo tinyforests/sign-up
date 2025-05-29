@@ -23,16 +23,17 @@
   </style>
   <script>
     function initAutocomplete() {
-      const input = document.getElementById('address');
-      const autocomplete = new google.maps.places.Autocomplete(input, { types: ['address'], componentRestrictions: { country: 'au' } });
+      const autocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('address'),
+        { types: ['address'], componentRestrictions: { country: 'au' } }
+      );
       autocomplete.addListener('place_changed', onPlaceChanged);
     }
     function onPlaceChanged() {
       const place = this.getPlace();
       const pc = place.address_components.find(c => c.types.includes('postal_code'));
       if (pc) document.getElementById('postcode').value = pc.long_name;
-      const sc = place.address_components.find(c => c.types.includes('locality'))
-                 || place.address_components.find(c => c.types.includes('sublocality'));
+      const sc = place.address_components.find(c => c.types.includes('locality')) || place.address_components.find(c => c.types.includes('sublocality'));
       const suburb = sc ? sc.long_name.trim().toLowerCase() : '';
       const serviced = ['balwyn','kew','surrey hills','mont albert','canterbury'];
       const msg = document.getElementById('message');
@@ -50,15 +51,6 @@
       }
       msg.classList.remove('hidden');
     }
-    // Reveal contact section after datetime selected
-    function initRevealContact() {
-      const datetime = document.getElementById('datetime');
-      const contact = document.getElementById('contact-section');
-      datetime.addEventListener('change', () => {
-        if (datetime.value) contact.classList.remove('hidden');
-      });
-    }
-    window.initRevealContact = initRevealContact;
   </script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDDCDijAq82O8rpW8Emj61m4Y4fTPIL0Kc&libraries=places&callback=initAutocomplete" async defer></script>
 </head>
@@ -67,13 +59,22 @@
   <form id="booking-form" autocomplete="off">
     <div class="form-group">
       <label for="address">Street Address</label>
-      <input id="address" name="address_autocomplete" type="text" autocomplete="off" placeholder="Start typing your address..." required /> your address..." required />
+      <input id="address" type="text" placeholder="Start typing your address..." required />
     </div>
     <div id="message" class="hidden"></div>
-
     <div id="details" class="hidden">
       <input id="postcode" type="hidden" />
-
+      <h2>What&rsquo;s your name?</h2>
+      <div class="form-group">
+        <input id="first-name" type="text" placeholder="First Name" required />
+      </div>
+      <div class="form-group">
+        <input id="last-name" type="text" placeholder="Last Name" required />
+      </div>
+      <div class="form-group">
+        <label for="username">Choose a username</label>
+        <input id="username" type="text" placeholder="Username" required />
+      </div>
       <div class="form-group">
         <label>Tasks Required</label>
         <div class="tags-container" id="tasks-container">
@@ -86,14 +87,12 @@
           <div class="tag" data-value="hedge_trimming">Hedge Trimming</div>
         </div>
       </div>
-
       <div class="form-group hidden" id="hedge-options">
         <label>Hedge Trimming Options</label>
         <div class="tags-container" id="hedge-ladder-container">
           <div class="tag" data-value="ladder_required">Need Ladder (+$60 per 30min)</div>
         </div>
       </div>
-
       <div class="form-group">
         <label>Service Duration</label>
         <div class="tags-container" id="duration-container">
@@ -103,45 +102,28 @@
           <div class="tag popular" data-value="2g3hr_480">2 gardeners, 3 hours ($480 + fees)<span class="badge">Most Popular</span></div>
         </div>
       </div>
-
       <div class="form-group">
         <label for="photos">Upload Images</label>
         <input id="photos" type="file" accept="image/*" multiple />
         <div class="preview-container" id="preview-container"></div>
       </div>
-
       <div class="form-group">
         <label for="datetime">Preferred Date & Time</label>
-        <input id="datetime" type="datetime-local" required />
+        <input id="datetime" type="datetime-local" required onchange="initRevealContact()" />
       </div>
-
       <div id="contact-section" class="hidden">
-        <h2>What's your name?</h2>
-        <div class="form-group">
-          <input id="first-name" type="text" placeholder="First Name" required />
-        </div>
-        <div class="form-group">
-          <input id="last-name" type="text" placeholder="Last Name" required />
-        </div>
-        <div class="form-group">
-          <label for="username">Choose a username</label>
-          <input id="username" type="text" placeholder="Username" required />
-        </div>
         <div class="form-group">
           <label for="phone">Best Contact Number</label>
           <input id="phone" type="tel" placeholder="Enter phone number" required />
         </div>
       </div>
-
       <div class="form-group">
         <button id="submit-btn" type="submit">Submit Booking</button>
       </div>
     </div>
   </form>
-
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      initRevealContact();
       const tasksContainer = document.getElementById('tasks-container');
       const hedgeOptions = document.getElementById('hedge-options');
       const hedgeLadderContainer = document.getElementById('hedge-ladder-container');
@@ -178,14 +160,14 @@
         const data = {
           address: document.getElementById('address').value,
           postcode: document.getElementById('postcode').value,
-          tasks: selectedTasks,
-          duration: selectedDuration,
-          ladderRequired,
-          datetime: document.getElementById('datetime').value,
           firstName: document.getElementById('first-name').value,
           lastName: document.getElementById('last-name').value,
           username: document.getElementById('username').value,
-          phone: document.getElementById('phone').value
+          phone: document.getElementById('phone').value,
+          tasks: selectedTasks,
+          duration: selectedDuration,
+          ladderRequired,
+          datetime: document.getElementById('datetime').value
         };
         console.log('Booking data:', data);
       });
